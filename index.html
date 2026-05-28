@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picnic Email Signature Generator</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #14171f;
+    --panel-2: #1c2030;
+    --border: #2a2f42;
+    --text: #e7e9ee;
+    --text-dim: #9aa0b4;
+    --accent: #00d28e;
+    --accent-hover: #00b378;
+    --danger: #ff5577;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  header p {
+    margin: 0 0 32px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .panel h2 {
+    margin: 0 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .field label .opt {
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 12px;
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="tel"],
+  .field input[type="url"] {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border 0.15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .toggle-row label {
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    background: var(--panel-2);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--text-dim);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch.on::after { transform: translateX(18px); background: white; }
+  .preview-wrapper {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    color: #1a1a1a;
+    overflow: auto;
+    max-height: 600px;
+  }
+  .preview-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0b0d12;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--panel-2);
+  }
+  .copied-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: #0b0d12;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.3s;
+    z-index: 100;
+  }
+  .copied-toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+  details {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    user-select: none;
+  }
+  details summary:hover { color: var(--text); }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .avatar-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .avatar-placeholder {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .avatar-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-small {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .code-block {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    max-height: 200px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Picnic Email Signature Generator</h1>
+    <p>Fill your info on the left, copy your signature on the right, paste into Gmail. ~2 minutes.</p>
+  </header>
+
+  <div class="grid">
+    <!-- FORM -->
+    <div class="panel">
+      <h2>Your info</h2>
+
+      <div class="field">
+        <label>Avatar photo <span class="opt">(optional, recommended)</span></label>
+        <div class="avatar-row">
+          <div class="avatar-preview" id="avatar-preview">
+            <span class="avatar-placeholder">No photo</span>
+          </div>
+          <div class="avatar-controls">
+            <input type="file" id="f-avatar" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleAvatarUpload(event)">
+            <button type="button" class="btn-secondary btn-small" onclick="document.getElementById('f-avatar').click()">Upload photo</button>
+            <button type="button" class="btn-secondary btn-small" id="btn-clear-avatar" onclick="clearAvatar()" style="display:none;">Remove</button>
+          </div>
+        </div>
+        <div class="hint">Auto-resized to 144×144 px (JPEG, ~10 KB). Round shape via border-radius — renders correctly in Gmail/Apple Mail. Outlook will show it as a square (no support for rounded images).</div>
+      </div>
+
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" id="f-name" placeholder="Maria Silva" value="Maria Silva">
+      </div>
+
+      <div class="field">
+        <label>Job title</label>
+        <input type="text" id="f-title" placeholder="Senior Product Designer" value="Senior Product Designer">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Work email</label>
+          <input type="email" id="f-email" placeholder="maria@usepicnic.com" value="maria@usepicnic.com">
+        </div>
+        <div class="field">
+          <label>Phone <span class="opt">(optional)</span></label>
+          <input type="tel" id="f-phone" placeholder="+55 11 91234-5678" value="+55 11 91234-5678">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>LinkedIn URL <span class="opt">(optional)</span></label>
+        <input type="url" id="f-linkedin" placeholder="https://linkedin.com/in/mariasilva" value="https://linkedin.com/in/mariasilva">
+      </div>
+
+      <div class="field">
+        <label>City / timezone <span class="opt">(optional)</span></label>
+        <input type="text" id="f-city" placeholder="São Paulo, BRT" value="São Paulo, BRT">
+      </div>
+
+      <details>
+        <summary>Advanced / brand options</summary>
+        <div class="field">
+          <label>Picnic wordmark logo URL</label>
+          <input type="url" id="f-logo" value="https://usepicnic.github.io/signature/logo-mail.png">
+          <div class="hint">Hosted PNG with transparent background. Recommended export: 200×66 px (renders at 100×33). See HOSTING-THE-LOGO.md.</div>
+        </div>
+        <div class="field">
+          <label>Website</label>
+          <input type="url" id="f-website" value="https://usepicnic.com">
+        </div>
+        <div class="field">
+          <label>Accent color</label>
+          <input type="text" id="f-accent" value="#B3F53D">
+          <div class="hint">Used for the divider line. Hex code, e.g. #B3F53D (Picnic lime).</div>
+        </div>
+        <div class="toggle-row">
+          <label for="t-logo">Show Picnic wordmark logo</label>
+          <div class="switch on" id="t-logo" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <label for="t-tagline">Show tagline ("Brazil's largest DeFi platform")</label>
+          <div class="switch" id="t-tagline" onclick="toggleSwitch(this)"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="panel">
+      <h2>Preview (as it appears in Gmail)</h2>
+      <div class="preview-label">↓ Email body ends here. Signature below ↓</div>
+      <div class="preview-wrapper" id="preview"></div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="copySignature()">Copy signature</button>
+        <button class="btn-secondary" onclick="downloadHTML()">Download HTML file</button>
+        <button class="btn-secondary" onclick="toggleSource()">Show HTML source</button>
+      </div>
+
+      <div id="source" style="display:none; margin-top: 16px;">
+        <div class="preview-label" style="margin-bottom: 8px;">HTML source (for admins / Append Footer)</div>
+        <div class="code-block" id="source-code"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Copied — now paste into Gmail signature editor</div>
+
+<script>
+  function toggleSwitch(el) {
+    el.classList.toggle('on');
+    render();
+  }
+
+  function val(id) {
+    return document.getElementById(id).value.trim();
+  }
+
+  function isOn(id) {
+    return document.getElementById(id).classList.contains('on');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Stores the resized avatar as a data URL (or empty string)
+  let avatarDataUrl = '';
+
+  function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Crop to square (center) then resize to 144x144
+        const size = 144;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        // Center-crop: take the largest square from the source
+        const srcSize = Math.min(img.width, img.height);
+        const sx = (img.width - srcSize) / 2;
+        const sy = (img.height - srcSize) / 2;
+        ctx.drawImage(img, sx, sy, srcSize, srcSize, 0, 0, size, size);
+        // Export as JPEG at 80% — keeps signature under 15 KB total
+        avatarDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('avatar-preview').innerHTML = `<img src="${avatarDataUrl}" alt="avatar">`;
+        document.getElementById('btn-clear-avatar').style.display = '';
+        render();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearAvatar() {
+    avatarDataUrl = '';
+    document.getElementById('f-avatar').value = '';
+    document.getElementById('avatar-preview').innerHTML = '<span class="avatar-placeholder">No photo</span>';
+    document.getElementById('btn-clear-avatar').style.display = 'none';
+    render();
+  }
+
+  function buildSignature() {
+    const name = escapeHtml(val('f-name'));
+    const title = escapeHtml(val('f-title'));
+    const email = escapeHtml(val('f-email'));
+    const phone = escapeHtml(val('f-phone'));
+    const linkedin = val('f-linkedin');
+    const linkedinDisplay = linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const city = escapeHtml(val('f-city'));
+    const logo = val('f-logo');
+    const website = val('f-website');
+    const websiteDisplay = website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const accent = val('f-accent') || '#B3F53D';
+    const showLogo = isOn('t-logo');
+    const showTagline = isOn('t-tagline');
+    const avatar = avatarDataUrl;
+
+    const linkStyle = `color:#1a1a1a;text-decoration:none;`;
+    const dimStyle = `color:#6b7280;`;
+    const fontStack = `-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif`;
+
+    const nameLine = `<span style="font-size:15px;font-weight:600;color:#1a1a1a;line-height:1.15;">${name}</span>`;
+    const titleLine = `<span style="font-size:13px;color:#4b5563;line-height:1.15;">${title}</span>`;
+    // Picnic wordmark logo line — sits between title and divider as brand anchor
+    const wordmarkLine = (showLogo && logo)
+      ? `<div style="margin-top:6px;line-height:0;"><a href="${website}" style="text-decoration:none;"><img src="${logo}" width="80" height="26" alt="Picnic" style="display:block;border:0;width:80px;height:auto;max-height:26px;"></a></div>`
+      : `<div style="margin-top:4px;"><strong style="color:#1a1a1a;font-size:13px;">picnic</strong></div>`;
+    const taglineLine = showTagline ? `<div style="font-size:12px;${dimStyle}margin-top:6px;font-style:italic;">Brazil's largest DeFi platform</div>` : '';
+
+    // Icons inherit the link text color (#1a1a1a). Email uses literal "@" character
+    // for max reliability across every mail client. Phone/globe are inline SVG with
+    // currentColor stroke — graceful Outlook fallback if SVG is stripped.
+    const iconColor = '#1a1a1a';
+    const iconStyle = `vertical-align:-2px;margin-right:6px;display:inline-block;`;
+    const iconMail = `<span style="margin-right:6px;font-weight:600;color:${iconColor};">@</span>`;
+    const iconPhone = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="${iconColor}" style="${iconStyle}"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>`;
+    const iconGlobe = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="${iconStyle}"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+
+    // LinkedIn: semibold, in LinkedIn brand blue, sans-serif (matches LinkedIn wordmark)
+    const linkedinStyle = `color:#0A66C2;text-decoration:none;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;`;
+
+    const contactRows = [];
+    contactRows.push(`<a href="mailto:${email}" style="${linkStyle}">${iconMail}${email}</a>`);
+    if (phone) contactRows.push(`<a href="tel:${phone.replace(/[^+\d]/g,'')}" style="${linkStyle}">${iconPhone}${phone}</a>`);
+
+    let contactHtml = `<div style="font-size:13px;color:#1a1a1a;margin-top:8px;">${contactRows.join(' &nbsp;&nbsp; ')}</div>`;
+
+    let linksHtml = '';
+    const websiteStyle = `color:#1a1a1a;text-decoration:none;font-weight:600;`;
+    const separator = `<span style="color:#d1d5db;margin:0 8px;font-weight:400;">|</span>`;
+    const linkParts = [];
+    if (website) linkParts.push(`<a href="${website}" style="${websiteStyle}">${iconGlobe}${websiteDisplay}</a>`);
+    if (linkedin) linkParts.push(`<a href="${linkedin}" style="${linkedinStyle}">LinkedIn</a>`);
+    if (linkParts.length) {
+      linksHtml = `<div style="font-size:13px;margin-top:4px;">${linkParts.join(separator)}</div>`;
+    }
+
+    const cityHtml = city ? `<div style="font-size:12px;${dimStyle}margin-top:6px;">${city}</div>` : '';
+
+    const textCell = `
+      <td style="vertical-align:top;font-family:${fontStack};padding:0;">
+        <div style="line-height:1.15;margin:0;padding:0;">${nameLine}</div>
+        <div style="line-height:1.15;margin:0;padding:0;">${titleLine}</div>
+        ${wordmarkLine}
+        ${taglineLine}
+        <div style="border-top:2px solid ${accent};width:32px;margin:10px 0;height:0;line-height:0;font-size:0;">&nbsp;</div>
+        ${contactHtml}
+        ${linksHtml}
+        ${cityHtml}
+      </td>`;
+
+    // Avatar lives on the left. Wordmark logo lives in the text column.
+    // If no avatar uploaded, the text column expands to fill — still looks clean.
+    const logoCell = avatar
+      ? `<td style="vertical-align:top;padding:0 16px 0 0;width:80px;">
+          <img src="${avatar}" width="72" height="72" alt="${name}" style="display:block;border:0;width:72px;height:72px;border-radius:50%;-webkit-border-radius:50%;-moz-border-radius:50%;object-fit:cover;">
+        </td>`
+      : '';
+
+    return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${fontStack};"><tr>${logoCell}${textCell}</tr></table>`;
+  }
+
+  function render() {
+    const html = buildSignature();
+    document.getElementById('preview').innerHTML = html;
+    document.getElementById('source-code').textContent = html;
+  }
+
+  async function copySignature() {
+    const html = buildSignature();
+    const plainText = stripHtmlToText(html);
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        const item = new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' })
+        });
+        await navigator.clipboard.write([item]);
+      } else {
+        // Fallback: use a hidden contenteditable
+        const div = document.createElement('div');
+        div.contentEditable = 'true';
+        div.style.position = 'fixed';
+        div.style.left = '-9999px';
+        div.innerHTML = html;
+        document.body.appendChild(div);
+        const range = document.createRange();
+        range.selectNodeContents(div);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+        document.body.removeChild(div);
+      }
+      showToast();
+    } catch (e) {
+      alert('Could not copy automatically. Click "Show HTML source" and copy it manually.');
+      console.error(e);
+    }
+  }
+
+  function stripHtmlToText(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function downloadHTML() {
+    const html = buildSignature();
+    const full = `<!DOCTYPE html><html><body>${html}</body></html>`;
+    const blob = new Blob([full], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `picnic-signature-${val('f-name').replace(/\s+/g,'-').toLowerCase()}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function toggleSource() {
+    const el = document.getElementById('source');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // bind all inputs to live re-render
+  document.querySelectorAll('input').forEach(i => i.addEventListener('input', render));
+  render();
+</script>
+</body>
+</html>
