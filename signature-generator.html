@@ -268,6 +268,73 @@
     white-space: pre-wrap;
     word-break: break-all;
   }
+  .setup-block {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .setup-block h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin: 0 0 16px;
+  }
+  .setup-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step;
+  }
+  .setup-steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 10px 0 10px 36px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+  .setup-steps li:last-child { border-bottom: 0; }
+  .setup-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0b0d12;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .setup-steps kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin: 0 2px;
+  }
+  .setup-tip {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(0, 210, 142, 0.08);
+    border: 1px solid rgba(0, 210, 142, 0.25);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .setup-tip strong { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -370,6 +437,21 @@
       <div id="source" style="display:none; margin-top: 16px;">
         <div class="preview-label" style="margin-bottom: 8px;">HTML source (for admins / Append Footer)</div>
         <div class="code-block" id="source-code"></div>
+      </div>
+
+      <div class="setup-block">
+        <h3>How to set it up in Gmail</h3>
+        <ol class="setup-steps">
+          <li>In Gmail, click the gear icon <kbd>⚙</kbd> in the top right and choose <strong>See all settings</strong>.</li>
+          <li>Stay on the <strong>General</strong> tab. Scroll down to the <strong>Signature</strong> section.</li>
+          <li>Click <strong>Create new</strong>. Name it <kbd>picnic</kbd> and confirm.</li>
+          <li>Click inside the signature editor box, then paste with <kbd>⌘V</kbd> (Mac) or <kbd>Ctrl+V</kbd> (Windows).</li>
+          <li>Under <strong>Signature defaults</strong>, set both <em>"FOR NEW EMAILS USE"</em> and <em>"ON REPLY/FORWARD USE"</em> to <kbd>picnic</kbd>.</li>
+          <li>Scroll to the bottom of the page and click <strong>Save Changes</strong>. Done.</li>
+        </ol>
+        <div class="setup-tip">
+          <strong>Heads up:</strong> the first time you send an email, Gmail will upload your avatar to its own CDN and replace the embedded image — recipients see a hosted image, not a data URL. Send a test email to yourself to confirm it renders correctly.
+        </div>
       </div>
     </div>
   </div>
